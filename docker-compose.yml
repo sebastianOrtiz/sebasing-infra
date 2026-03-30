@@ -105,7 +105,8 @@ services:
       - "8081"
     environment:
       DATABASE_URL: ${DATABASE_URL}
-      REDIS_URL: ${REDIS_URL}
+      REDIS_URL: "redis:6379"
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
       API_KEY: ${EVENT_SERVICE_API_KEY}
       HTTP_PORT: "8081"
       DB_SCHEMA: events
@@ -131,7 +132,8 @@ services:
     command: ["worker"]
     environment:
       DATABASE_URL: ${DATABASE_URL}
-      REDIS_URL: ${REDIS_URL}
+      REDIS_URL: "redis:6379"
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
       API_KEY: ${EVENT_SERVICE_API_KEY}
       DB_SCHEMA: events
       ENVIRONMENT: production
