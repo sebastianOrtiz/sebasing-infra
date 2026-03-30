@@ -1,0 +1,70 @@
+name: Deploy to Hetzner
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          script_stop: true
+          script: |
+            cd /opt/sebasing
+            git pull origin main
+            ./scripts/deploy.sh
+
+      - name: Verify health checks
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          script_stop: true
+          script: |
+            echo "Verificando servicios..."
+
+            check_service() {
+              local name=$1
+              local url=$2
+              local status
+              status=$(curl -sf -o /dev/null -w "%{http_code}" "$url" 2>/dev/null || echo "000")
+              if [ "$status" -ge 200 ] && [ "$status" -lt 400 ]; then
+                echo "  $name: OK ($status)"
+              else
+                echo "  $name: FALLO ($status)"
+                return 1
+              fi
+            }
+
+            sleep 10
+
+            FAILED=0
+            check_service "portfolio-web" "http://localhost:3000/" || FAILED=$((FAILED+1))
+            check_service "nexus-crm-api" "http://localhost:8000/health" || FAILED=$((FAILED+1))
+            check_service "event-api" "http://localhost:8081/health" || FAILED=$((FAILED+1))
+            check_service "search-api" "http://localhost:8082/health" || FAILED=$((FAILED+1))
+
+            if [ "$FAILED" -gt 0 ]; then
+              echo ""
+              echo "ADVERTENCIA: $FAILED servicio(s) no responden."
+              echo "Revisa con: docker compose logs"
+              exit 1
+            fi
+
+            echo ""
+            echo "Todos los servicios responden correctamente."

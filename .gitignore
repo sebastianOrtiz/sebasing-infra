@@ -1,0 +1,17 @@
+# Variables de entorno (contiene secretos)
+.env
+
+# Certificados SSL
+ssl/certbot/
+
+# Backups de base de datos
+backups/
+
+# Logs
+*.log
+
+# Sistema
+.DS_Store
+Thumbs.db
+CLAUDE.md
+AGENTS.md
