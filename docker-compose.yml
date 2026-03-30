@@ -100,7 +100,7 @@ services:
 
   event-api:
     image: ghcr.io/sebastianortiz/event-driven-service:latest
-    command: ["./api"]
+    command: ["api"]
     expose:
       - "8081"
     environment:
@@ -128,7 +128,7 @@ services:
 
   event-workers:
     image: ghcr.io/sebastianortiz/event-driven-service:latest
-    command: ["./worker"]
+    command: ["worker"]
     environment:
       DATABASE_URL: ${DATABASE_URL}
       REDIS_URL: ${REDIS_URL}
@@ -159,7 +159,7 @@ services:
       postgres:
         condition: service_healthy
       chromadb:
-        condition: service_healthy
+        condition: service_started
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8082/health"]
       interval: 30s
@@ -214,12 +214,6 @@ services:
     environment:
       ANONYMIZED_TELEMETRY: "false"
       IS_PERSISTENT: "true"
-    healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8000/api/v1/heartbeat"]
-      interval: 15s
-      timeout: 5s
-      retries: 5
-      start_period: 15s
     restart: unless-stopped
     networks:
       - backend
