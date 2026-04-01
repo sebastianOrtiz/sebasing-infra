@@ -45,6 +45,9 @@ services:
       - "3000"
     environment:
       NODE_ENV: production
+      EVENT_API_URL: http://event-api:8081
+      EVENT_API_KEY: ${EVENT_SERVICE_API_KEY}
+      SEARCH_API_URL: http://search-api:8082
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1:3000/"]
       interval: 30s
@@ -54,6 +57,7 @@ services:
     restart: unless-stopped
     networks:
       - frontend
+      - backend
 
   nexus-crm-api:
     image: ghcr.io/sebastianortiz/nexus-crm-api:latest
