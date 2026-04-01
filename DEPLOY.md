@@ -177,6 +177,28 @@ docker exec -it infra-nexus-crm-api-1 python -m scripts.seed
 
 Credenciales demo: `demo@nexuscrm.dev` / `Demo1234!`
 
+## 10. Seed de busqueda semantica
+
+La API de busqueda semantica necesita documentos indexados para funcionar. El script sube los READMEs de cada proyecto como base de conocimiento:
+
+```bash
+# Copiar el script al contenedor
+docker cp ~/semantic-search-api/scripts infra-search-api-1:/app/scripts
+
+# Ejecutar el seed (borra documentos existentes y sube los READMEs)
+docker exec -it infra-search-api-1 python -m scripts.seed-documents \
+  --url http://localhost:8082
+```
+
+Tambien se puede ejecutar desde fuera del contenedor si tienes Python disponible:
+
+```bash
+cd ~/semantic-search-api
+python scripts/seed-documents.py --url https://nexus-crm-semantic-search-api.sebasing.dev
+```
+
+El script es idempotente: limpia todos los documentos y los re-indexa desde cero.
+
 ## Actualizar un servicio
 
 Cuando hay cambios en el codigo de un servicio:
